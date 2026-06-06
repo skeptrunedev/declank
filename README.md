@@ -96,10 +96,52 @@ Set `DECLANK_TIMEOUT_MS` if invisible or all-signal processing needs more
 than the default 10 minute server timeout. `CLEARFRAME_TIMEOUT_MS` and
 `IMGX_TIMEOUT_MS` are still supported.
 
+## Local development
+
+```bash
+npm run dev:all   # Vite (web) + the API server, with hot reload
+npm run build     # build the static UI into dist/
+npm start         # serve the built dist/ + API at http://localhost:3333
+```
+
+## Deploy (Cloudflare Pages + Tunnel)
+
+The watermark model is heavy Python/ML and cannot run on Cloudflare's edge, so
+the static UI goes on **Cloudflare Pages** and the backend runs on a machine you
+control, exposed through a **Cloudflare Tunnel**. A Pages Function
+(`functions/api/transform.js`) proxies `/api/transform` to that backend, so the
+browser only ever talks to your own origin.
+
+**1. Frontend on Cloudflare Pages** (connect this GitHub repo, or `wrangler pages deploy`):
+
+- Build command: `npm run build`
+- Build output directory: `dist`
+- Environment variable: `BACKEND_URL = https://api.YOUR-DOMAIN.com`
+
+**2. Backend on your machine** (must have `remove-ai-watermarks` installed):
+
+```bash
+node server.js            # API on :3333
+```
+
+**3. Expose it with a tunnel** (see `deploy/cloudflared.config.example.yml`):
+
+```bash
+cloudflared tunnel login
+cloudflared tunnel create declank-api
+cloudflared tunnel route dns declank-api api.YOUR-DOMAIN.com
+cloudflared tunnel run declank-api
+```
+
+Note: Cloudflare's edge times out a request after ~100s, and that limit can't be
+raised. If CPU cleaning is slower than that, the request will fail with a 524, so
+prefer a GPU device for the web path.
+
 ## Architecture
 
 ```text
-public/index.html   upload UI
+web/                Vite + React UI (builds to dist/)
+functions/api/      Cloudflare Pages Function: proxies /api/transform -> BACKEND_URL
 server.js           Express; POST /api/transform -> execFile(node bin/imgx.js)
 bin/imgx.js         local wrapper around remove-ai-watermarks
 src/transform.js    shared mode validation and CLI argument builder

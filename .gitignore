@@ -5,8 +5,3 @@ dist/
 # design + session tooling (not part of the app)
 .impeccable/
 .expect/
-
-# OG card art is derived from a third-party painting; supply your own.
-# See scripts/og.mjs.
-assets/og-background.jpg
-web/public/og.png
