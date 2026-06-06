@@ -17,7 +17,6 @@ interface Props {
   mode: Mode;
   elapsed: number;
   onCancel: () => void;
-  caption: string;
 }
 
 function clock(seconds: number): string {

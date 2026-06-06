@@ -87,6 +87,29 @@ for (const l of lines) {
   y += 40;
 }
 
+// call-to-action button
+const ctaText = "Clean an image, free  →";
+ctx.font = `26px "LSans Bold"`;
+const ctaW = ctx.measureText(ctaText).width;
+const btnPadX = 22;
+const btnH = 54;
+const btnW = ctaW + btnPadX * 2;
+const btnX = PAD;
+const btnY = y + 18;
+ctx.fillStyle = INK;
+ctx.beginPath();
+ctx.roundRect(btnX, btnY, btnW, btnH, 9);
+ctx.fill();
+ctx.fillStyle = "#fff";
+ctx.textBaseline = "middle";
+ctx.fillText(ctaText, btnX + btnPadX, btnY + btnH / 2 + 1);
+
+// url under the button
+ctx.font = `19px "LSans"`;
+ctx.fillStyle = MUTED;
+ctx.textBaseline = "alphabetic";
+ctx.fillText("declank.skeptrune.com", PAD, btnY + btnH + 32);
+
 const png = canvas.toBuffer("image/png");
 writeFileSync(join(ROOT, "web", "public", "og.png"), png);
 console.log(`wrote web/public/og.png (${W}x${H}, ${(png.length / 1024).toFixed(1)} KB) titleSize=${titleSize}`);
